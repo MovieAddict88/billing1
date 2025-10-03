@@ -89,7 +89,6 @@
 
 	<?php include 'includes/footer.php'; ?>
 	<script type="text/javascript">
-		document.getElementById('date').valueAsDate = new Date();
 		function pay(id) {
 		let left = (screen.width/2)-(600/2);
   	let top = (screen.height/2)-(800/2);
@@ -100,6 +99,6 @@
 		let left = (screen.width/2)-(600/2);
   	let top = (screen.height/2)-(800/2);
 		let params = `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=600,height=800,left=${left},top=${top}`;
-		open('invoice.php?customer='+id, 'Invoice', params)
+		open('pay.php?customer='+id+'&action=bill', 'Invoice', params)
 		}
 	</script>
