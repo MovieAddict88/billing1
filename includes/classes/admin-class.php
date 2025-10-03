@@ -103,6 +103,24 @@
 			return false;
 		}
 
+		public function getEmployerById($id)
+		{
+			$request = $this->dbh->prepare("SELECT * FROM kp_user WHERE user_id = ?");
+			if ($request->execute([$id])) {
+				return $request->fetch();
+			}
+			return false;
+		}
+
+		public function getEmployers()
+		{
+			$request = $this->dbh->prepare("SELECT * FROM kp_user WHERE role = 'admin' ORDER BY user_id DESC");
+			if ($request->execute()) {
+				return $request->fetchAll();
+			}
+			return false;
+		}
+
 		public function fetchCustomerDetails($customerId)
 		{
 			$details = [
@@ -231,11 +249,11 @@
 		 * 
 		 */
 		
-		public function addCustomer($full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $login_code)
+		public function addCustomer($full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $login_code, $employer_id)
 		{
-			$request = $this->dbh->prepare("INSERT INTO customers (`full_name`, `nid`, `address`, `conn_location`, `email`, `package_id`, `ip_address`, `conn_type`, `contact`, `login_code`) VALUES(?,?,?,?,?,?,?,?,?,?)");
+			$request = $this->dbh->prepare("INSERT INTO customers (`full_name`, `nid`, `address`, `conn_location`, `email`, `package_id`, `ip_address`, `conn_type`, `contact`, `login_code`, `employer_id`) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
 			// Do not forget to encrypt the pasword before saving
-			return $request->execute([$full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $login_code]);
+			return $request->execute([$full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $login_code, $employer_id]);
 		}
 		/**
 		 * Fetch Customers
@@ -252,10 +270,10 @@
 		/**
 		 * Update Customers
 		 */
-		public function updateCustomer($id, $full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact)
+		public function updateCustomer($id, $full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $employer_id)
 		{
-			$request = $this->dbh->prepare("UPDATE customers SET full_name =?, nid =?, address =?, conn_location= ?, email =?, package_id =?, ip_address=?, conn_type=?, contact=? WHERE id =?");
-			return $request->execute([$full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $id]);
+			$request = $this->dbh->prepare("UPDATE customers SET full_name =?, nid =?, address =?, conn_location= ?, email =?, package_id =?, ip_address=?, conn_type=?, contact=?, employer_id = ? WHERE id =?");
+			return $request->execute([$full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $employer_id, $id]);
 		}
 
 

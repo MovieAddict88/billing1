@@ -23,8 +23,8 @@
     $paidBills = $customerDetails['paid_bills'];
     $transactions = $customerDetails['transactions'];
     $employer = null;
-    if ($customerInfo) {
-        $employer = $admins->getEmployerByLocation($customerInfo->conn_location);
+    if ($customerInfo && $customerInfo->employer_id) {
+        $employer = $admins->getEmployerById($customerInfo->employer_id);
     }
 ?>
 <style>
