@@ -113,6 +113,18 @@
 											</select>
 					      </div>
 					      <div class="form-group">
+					        <label for="package">Select Employer</label>
+										<select class="form-control form-control-sm" name="employer" id="employer">
+											<option value=''>Select an employer</option>
+											<?php
+											$employers = $admins->getEmployers();
+											if (isset($employers) && sizeof($employers) > 0){
+												foreach ($employers as $employer) { ?>
+												<option value='<?=$employer->user_id?>'><?=$employer->full_name?></option>
+											<?php }} ?>
+											</select>
+					      </div>
+					      <div class="form-group">
 					        <label for="ip_address">IP Address</label>
 					        <input type="text" class="form-control" id="ip_address" name="ip_address" placeholder="IP Address">
 					      </div>
@@ -183,10 +195,11 @@
 		var ip_address = $('#ip-'+str).val();
 		var conn_type = $('#ct-'+str).val();
 		var contact = $('#con-'+str).val();
+		var employer = $('#emp-'+str).val();
 		$.ajax({
 			method:"POST",
 			url: "customers_approve.php?p=edit",
-			data: "full_name="+full_name+"&nid="+nid+"&address="+address+"&conn_location="+conn_location+"&email="+email+"&package="+package+"&ip_address="+ip_address+"&conn_type="+conn_type+"&contact="+contact+"&id="+id,
+			data: "full_name="+full_name+"&nid="+nid+"&address="+address+"&conn_location="+conn_location+"&email="+email+"&package="+package+"&ip_address="+ip_address+"&conn_type="+conn_type+"&contact="+contact+"&employer="+employer+"&id="+id,
 			success: function (data){
                 console.log(data);
 				viewData();

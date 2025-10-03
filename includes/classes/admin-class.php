@@ -10,7 +10,7 @@
 
 		public function __construct($db)
 		{
-			$this->dbh = $db->dbh;
+			$this->dbh = $db;
 		}
 
 		public function loginAdmin($user_name, $user_pwd)
@@ -103,6 +103,78 @@
 			return false;
 		}
 
+		public function fetchAllIndividualBill($customer_id)
+		{
+			$request = $this->dbh->prepare("SELECT * FROM `payments` where customer_id = ?");
+			if ($request->execute([$customer_id])) {
+				return $request->fetchAll();
+			}
+			return false;
+		}
+
+		public function getEmployerById($id)
+		{
+			$request = $this->dbh->prepare("SELECT * FROM kp_user WHERE user_id = ?");
+			if ($request->execute([$id])) {
+				return $request->fetch();
+			}
+			return false;
+		}
+
+		public function getEmployers()
+		{
+			$request = $this->dbh->prepare("SELECT * FROM kp_user WHERE role = 'employer' ORDER BY user_id DESC");
+			if ($request->execute()) {
+				return $request->fetchAll();
+			}
+			return false;
+		}
+
+		public function fetchCustomerDetails($customerId)
+		{
+			$details = [
+				'info' => null,
+				'unpaid_bills' => [],
+				'paid_bills' => [],
+				'transactions' => [],
+			];
+
+			// Fetch customer info
+			$request = $this->dbh->prepare("SELECT * FROM customers WHERE id = ?");
+			if ($request->execute([$customerId])) {
+				$details['info'] = $request->fetch();
+			}
+
+			// Fetch unpaid bills
+			$request = $this->dbh->prepare("SELECT * FROM payments WHERE customer_id = ? AND paid = 0");
+			if ($request->execute([$customerId])) {
+				$details['unpaid_bills'] = $request->fetchAll();
+			}
+
+			// Fetch paid bills
+			$request = $this->dbh->prepare("SELECT * FROM payments WHERE customer_id = ? AND paid = 1");
+			if ($request->execute([$customerId])) {
+				$details['paid_bills'] = $request->fetchAll();
+			}
+
+			// Fetch transactions
+			$request = $this->dbh->prepare("SELECT * FROM billings WHERE customer_id = ?");
+			if ($request->execute([$customerId])) {
+				$details['transactions'] = $request->fetchAll();
+			}
+
+			return $details;
+		}
+
+		public function getEmployerByLocation($location)
+		{
+			$request = $this->dbh->prepare("SELECT * FROM kp_user WHERE role = 'admin' AND location = ?");
+			if ($request->execute([$location])) {
+				return $request->fetch();
+			}
+			return false;
+		}
+
 		public function fetchCustomerStatusByLocation($location)
 		{
 			$request = $this->dbh->prepare("
@@ -186,11 +258,11 @@
 		 * 
 		 */
 		
-		public function addCustomer($full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $login_code)
+		public function addCustomer($full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $login_code, $employer_id)
 		{
-			$request = $this->dbh->prepare("INSERT INTO customers (`full_name`, `nid`, `address`, `conn_location`, `email`, `package_id`, `ip_address`, `conn_type`, `contact`, `login_code`) VALUES(?,?,?,?,?,?,?,?,?,?)");
+			$request = $this->dbh->prepare("INSERT INTO customers (`full_name`, `nid`, `address`, `conn_location`, `email`, `package_id`, `ip_address`, `conn_type`, `contact`, `login_code`, `employer_id`) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
 			// Do not forget to encrypt the pasword before saving
-			return $request->execute([$full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $login_code]);
+			return $request->execute([$full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $login_code, $employer_id]);
 		}
 		/**
 		 * Fetch Customers
@@ -207,10 +279,10 @@
 		/**
 		 * Update Customers
 		 */
-		public function updateCustomer($id, $full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact)
+		public function updateCustomer($id, $full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $employer_id)
 		{
-			$request = $this->dbh->prepare("UPDATE customers SET full_name =?, nid =?, address =?, conn_location= ?, email =?, package_id =?, ip_address=?, conn_type=?, contact=? WHERE id =?");
-			return $request->execute([$full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $id]);
+			$request = $this->dbh->prepare("UPDATE customers SET full_name =?, nid =?, address =?, conn_location= ?, email =?, package_id =?, ip_address=?, conn_type=?, contact=?, employer_id = ? WHERE id =?");
+			return $request->execute([$full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $employer_id, $id]);
 		}
 
 
@@ -221,8 +293,24 @@
 		 */
 		public function deleteCustomer($id)
 		{
-			$request = $this->dbh->prepare("DELETE FROM customers WHERE id = ?");
-			return $request->execute([$id]);
+			try {
+				$this->dbh->beginTransaction();
+
+				$request = $this->dbh->prepare("DELETE FROM payments WHERE customer_id = ?");
+				$request->execute([$id]);
+
+				$request = $this->dbh->prepare("DELETE FROM billings WHERE customer_id = ?");
+				$request->execute([$id]);
+
+				$request = $this->dbh->prepare("DELETE FROM customers WHERE id = ?");
+				$request->execute([$id]);
+
+				$this->dbh->commit();
+				return true;
+			} catch (Exception $e) {
+				$this->dbh->rollBack();
+				return false;
+			}
 		}
 
 
@@ -393,7 +481,20 @@
 		 */
 		 public function fetchBilling($limit = 100)
 		{
-			$request = $this->dbh->prepare("SELECT id, customer_id, GROUP_CONCAT(r_month) as months, sum(amount) as total, g_date, p_date, paid FROM payments WHERE paid = 0 Group BY customer_id LIMIT $limit");
+			$request = $this->dbh->prepare("
+			SELECT
+				MIN(id) as id,
+				customer_id,
+				GROUP_CONCAT(r_month) as months,
+				SUM(amount) as total,
+				MAX(g_date) as g_date,
+				MAX(p_date) as p_date,
+				paid
+			FROM payments
+			WHERE paid = 0
+			GROUP BY customer_id, paid
+			LIMIT $limit
+		");
 			if ($request->execute()) {
 				return $request->fetchAll();
 			}
