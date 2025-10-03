@@ -1,5 +1,5 @@
 <?php
-	require_once "includes/headx.php";
+	require_once 'includes/header.php';
 	if (!isset($_SESSION['admin_session']) )
 	{
 		$commons->redirectTo(SITE_PATH.'login.php');
