@@ -103,6 +103,51 @@
 			return false;
 		}
 
+		public function fetchCustomerDetails($customerId)
+		{
+			$details = [
+				'info' => null,
+				'unpaid_bills' => [],
+				'paid_bills' => [],
+				'transactions' => [],
+			];
+
+			// Fetch customer info
+			$request = $this->dbh->prepare("SELECT * FROM customers WHERE id = ?");
+			if ($request->execute([$customerId])) {
+				$details['info'] = $request->fetch();
+			}
+
+			// Fetch unpaid bills
+			$request = $this->dbh->prepare("SELECT * FROM payments WHERE customer_id = ? AND paid = 0");
+			if ($request->execute([$customerId])) {
+				$details['unpaid_bills'] = $request->fetchAll();
+			}
+
+			// Fetch paid bills
+			$request = $this->dbh->prepare("SELECT * FROM payments WHERE customer_id = ? AND paid = 1");
+			if ($request->execute([$customerId])) {
+				$details['paid_bills'] = $request->fetchAll();
+			}
+
+			// Fetch transactions
+			$request = $this->dbh->prepare("SELECT * FROM billings WHERE customer_id = ?");
+			if ($request->execute([$customerId])) {
+				$details['transactions'] = $request->fetchAll();
+			}
+
+			return $details;
+		}
+
+		public function getEmployerByLocation($location)
+		{
+			$request = $this->dbh->prepare("SELECT * FROM kp_user WHERE role = 'admin' AND location = ?");
+			if ($request->execute([$location])) {
+				return $request->fetch();
+			}
+			return false;
+		}
+
 		public function fetchCustomerStatusByLocation($location)
 		{
 			$request = $this->dbh->prepare("
