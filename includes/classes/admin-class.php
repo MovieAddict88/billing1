@@ -293,8 +293,24 @@
 		 */
 		public function deleteCustomer($id)
 		{
-			$request = $this->dbh->prepare("DELETE FROM customers WHERE id = ?");
-			return $request->execute([$id]);
+			try {
+				$this->dbh->beginTransaction();
+
+				$request = $this->dbh->prepare("DELETE FROM payments WHERE customer_id = ?");
+				$request->execute([$id]);
+
+				$request = $this->dbh->prepare("DELETE FROM billings WHERE customer_id = ?");
+				$request->execute([$id]);
+
+				$request = $this->dbh->prepare("DELETE FROM customers WHERE id = ?");
+				$request->execute([$id]);
+
+				$this->dbh->commit();
+				return true;
+			} catch (Exception $e) {
+				$this->dbh->rollBack();
+				return false;
+			}
 		}
 
 
