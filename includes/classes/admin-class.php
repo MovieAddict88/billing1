@@ -114,7 +114,7 @@
 
 		public function getEmployers()
 		{
-			$request = $this->dbh->prepare("SELECT * FROM kp_user WHERE role = 'admin' ORDER BY user_id DESC");
+			$request = $this->dbh->prepare("SELECT * FROM kp_user WHERE role = 'employer' ORDER BY user_id DESC");
 			if ($request->execute()) {
 				return $request->fetchAll();
 			}
