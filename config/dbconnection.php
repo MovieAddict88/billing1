@@ -7,30 +7,28 @@
         {
         	// Change the database setting with yours accordingly
             private $dbengine   = 'mysql';
-            private $dbhost     = 'sql312.infinityfree.com';
-            private $dbuser     = 'if0_40070986'; // Set your database username
-            private $dbpassword = 'JYpHwjLrrZU'; //Set your database password
-            private $dbname     = 'if0_40070986_test'; // This can be changed too into yours
-
-        	// Set the database handler to null
-        	public $dbh = null;
+            private $dbhost     = '127.0.0.1';
+            private $dbuser     = 'kp_user'; // Set your database username
+            private $dbpassword = 'password'; //Set your database password
+            private $dbname     = 'kp_db'; // This can be changed too into yours
 
         	function __construct()
         	{
         		try{
 
         			// Connect to the database and save the DB instance in $dbh
-	                $this->dbh = new PDO("".$this->dbengine.":host=$this->dbhost; dbname=$this->dbname", $this->dbuser, $this->dbpassword);
+	                parent::__construct("".$this->dbengine.":host=$this->dbhost; dbname=$this->dbname", $this->dbuser, $this->dbpassword);
 
 	               	// This will allow me to have objects format of my data everytime i fetch from my database
 	               	// Or we'll have to do it in each function in which we query data from database
-	                $this->dbh->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
-                    $this->dbh->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, FALSE);
+	                $this->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
+                    $this->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, FALSE);
 
 	            }
 	            catch (PDOException $e){
 	            	// if any error throw an exception
-	                $e->getMessage();
+	                echo $e->getMessage();
+					die();
 	            }
         	}
 

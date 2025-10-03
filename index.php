@@ -14,18 +14,29 @@ if ($user_role == 'employer') {
     $products = $admins->fetchProductsByCustomerLocation($location);
 ?>
 <h3>Employer Dashboard - Location: <?php echo htmlspecialchars($location); ?></h3>
+<style>
+    .table-custom thead {
+        background-color: #008080;
+        color: white;
+    }
+    .table-custom .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+</style>
 <div class="row">
     <div class="col-md-6">
         <div class="panel panel-default">
             <div class="panel-heading">Customers in Your Location</div>
             <div class="panel-body">
-                <table class="table table-striped">
+                <table class="table table-striped table-custom">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th>Address</th>
                             <th>Contact</th>
                             <th>Login Code</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -36,11 +47,15 @@ if ($user_role == 'employer') {
                                     <td><?php echo htmlspecialchars($customer->address); ?></td>
                                     <td><?php echo htmlspecialchars($customer->contact); ?></td>
                                     <td><?php echo htmlspecialchars($customer->login_code); ?></td>
+                                    <td>
+                                        <a href="pay.php?customer=<?php echo $customer->id; ?>&action=bill" class="btn btn-primary btn-sm">Invoice</a>
+                                        <a href="pay.php?customer=<?php echo $customer->id; ?>" class="btn btn-info btn-sm">Bill</a>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="4">No customers found for this location.</td>
+                                <td colspan="5">No customers found for this location.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>

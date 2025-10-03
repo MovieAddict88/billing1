@@ -47,8 +47,7 @@
 				    <th>Package</th>
 				    <th>Months</th>
 				    <th>Amounts</th>
-				    <th>Balance</th>
-				    <th>Payment</th>
+				    <th>Action</th>
 				  </tr>
 				</thead>
 			  <tbody>
@@ -67,8 +66,7 @@
 			  	<td><?=$bill->g_date?></td>
 			  	<td><?=$package_name?></td>
 			  	<td><?=$bill->months?></td>
-			  	<td><?=$bill->total?></td>
-			  	<td>₱<?=number_format($balance, 2)?></td>
+				<td>₱<?=number_format($bill->total, 2)?></td>
 			  	<td><button type="button" onClick=pay(<?=$client_id?>) class="btn btn-info">Pay</button> <button onClick=bill(<?=$client_id?>) type="button" class="btn btn-info">Bill</button></td>
 			  </tr>
 			  <?php
@@ -89,7 +87,6 @@
 
 	<?php include 'includes/footer.php'; ?>
 	<script type="text/javascript">
-		document.getElementById('date').valueAsDate = new Date();
 		function pay(id) {
 		let left = (screen.width/2)-(600/2);
   	let top = (screen.height/2)-(800/2);
@@ -100,6 +97,6 @@
 		let left = (screen.width/2)-(600/2);
   	let top = (screen.height/2)-(800/2);
 		let params = `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,width=600,height=800,left=${left},top=${top}`;
-		open('invoice.php?customer='+id, 'Invoice', params)
+		open('pay.php?customer='+id+'&action=bill', 'Invoice', params)
 		}
 	</script>
