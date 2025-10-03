@@ -483,16 +483,16 @@
 		{
 			$request = $this->dbh->prepare("
 			SELECT
-				MIN(id) as id,
+				id,
 				customer_id,
-				GROUP_CONCAT(r_month) as months,
-				SUM(amount) as total,
-				MAX(g_date) as g_date,
-				MAX(p_date) as p_date,
+				r_month as months,
+				amount as total,
+				g_date,
+				p_date,
 				paid
 			FROM payments
 			WHERE paid = 0
-			GROUP BY customer_id, paid
+			ORDER BY id DESC
 			LIMIT $limit
 		");
 			if ($request->execute()) {

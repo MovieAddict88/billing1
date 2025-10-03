@@ -47,8 +47,7 @@
 				    <th>Package</th>
 				    <th>Months</th>
 				    <th>Amounts</th>
-				    <th>Balance</th>
-				    <th>Payment</th>
+				    <th>Action</th>
 				  </tr>
 				</thead>
 			  <tbody>
@@ -67,7 +66,6 @@
 			  	<td><?=$bill->g_date?></td>
 			  	<td><?=$package_name?></td>
 			  	<td><?=$bill->months?></td>
-			  	<td><?=$bill->total?></td>
 				<td>₱<?=number_format($bill->total, 2)?></td>
 			  	<td><button type="button" onClick=pay(<?=$client_id?>) class="btn btn-info">Pay</button> <button onClick=bill(<?=$client_id?>) type="button" class="btn btn-info">Bill</button></td>
 			  </tr>

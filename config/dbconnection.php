@@ -8,7 +8,7 @@
         	// Change the database setting with yours accordingly
             private $dbengine   = 'mysql';
             private $dbhost     = '127.0.0.1';
-            private $dbuser     = 'root'; // Set your database username
+            private $dbuser     = 'kp_user'; // Set your database username
             private $dbpassword = 'password'; //Set your database password
             private $dbname     = 'kp_db'; // This can be changed too into yours
 
