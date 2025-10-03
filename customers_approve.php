@@ -21,6 +21,7 @@
 			$ip_address = $_POST['ip_address'];
 			$conn_type = $_POST['conn_type'];
 			$contact = $_POST['contact'];
+			$employer_id = $_POST['employer'];
 			$login_code = bin2hex(random_bytes(16));
 
 			if (isset($_POST)) 
@@ -28,7 +29,7 @@
 
 				$errors = array();
 				// Check if password are the same
-				if (!$admins->addCustomer($full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $login_code))
+				if (!$admins->addCustomer($full_name, $nid, $address, $conn_location, $email, $package, $ip_address, $conn_type, $contact, $login_code, $employer_id))
 				{
 					session::set('errors', ['Couldn\'t Add New Customer']);
 				}else{
@@ -55,7 +56,8 @@
 		$ip_address = $_POST['ip_address'];
 		$conn_type = $_POST['conn_type'];
 		$contact = $_POST['contact'];
-		if (!$admins->updateCustomer($id, $full_name, $nid, $address, $conn_location, $email, $package, $ip_address,  $conn_type, $contact)) 
+		$employer_id = $_POST['employer'];
+		if (!$admins->updateCustomer($id, $full_name, $nid, $address, $conn_location, $email, $package, $ip_address,  $conn_type, $contact, $employer_id))
 		{	
 			//echo "$id $customername $email $full_name $address $contact";
 			echo "Sorry Data could not be Updated !";
@@ -64,7 +66,8 @@
 		}
 
 	}else{
-		$customers = $admins->fetchCustomer(); 
+		$customers = $admins->fetchCustomer();
+		$employers = $admins->getEmployers();
 		if (isset($customers) && sizeof($customers) > 0) {
 			foreach ($customers as $customer){
 				$packageInfo = $admins->getPackageInfo($customer->package_id);
@@ -130,6 +133,17 @@
 											<div class="form-group">
 												<label for="email">Email</label>
 												<input type="text" class="form-control" id="em-<?=$customer->id?>"   value="<?=$customer->email?>" required>
+											</div>
+											<div class="form-group">
+												<label for="package">Select Employer</label>
+												<select class="form-control form-control-sm" name="employer" id="emp-<?=$customer->id?>">
+													<option value=''>Select an employer</option>
+													<?php
+													if (isset($employers) && sizeof($employers) > 0){
+														foreach ($employers as $employer) { ?>
+															<option value='<?=$employer->user_id?>' <?=$customer->employer_id == $employer->user_id ? 'selected' : ''?>><?=$employer->full_name?></option>
+														<?php }} ?>
+												</select>
 											</div>
 										</div>
 										<div class="modal-footer">
