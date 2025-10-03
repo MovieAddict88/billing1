@@ -117,7 +117,7 @@
                                         <td><?= $paidAmount ?></td>
                                         <td><?= $balance ?></td>
                                         <td><?= $bill->amount ?></td>
-                                        <td><a href="invoice.php?id=<?= $bill->id ?>" class="btn btn-primary">Invoice</a></td>
+                                        <td><a href="pay.php?customer=<?= $customerId ?>&action=bill" class="btn btn-primary">Invoice</a></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
