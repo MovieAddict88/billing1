@@ -103,6 +103,15 @@
 			return false;
 		}
 
+		public function fetchAllIndividualBill($customer_id)
+		{
+			$request = $this->dbh->prepare("SELECT * FROM `payments` where customer_id = ?");
+			if ($request->execute([$customer_id])) {
+				return $request->fetchAll();
+			}
+			return false;
+		}
+
 		public function getEmployerById($id)
 		{
 			$request = $this->dbh->prepare("SELECT * FROM kp_user WHERE user_id = ?");
