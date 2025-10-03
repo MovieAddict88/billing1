@@ -68,7 +68,7 @@
 			  	<td><?=$package_name?></td>
 			  	<td><?=$bill->months?></td>
 			  	<td><?=$bill->total?></td>
-			  	<td>₱<?=number_format($balance, 2)?></td>
+				<td>₱<?=number_format($bill->total, 2)?></td>
 			  	<td><button type="button" onClick=pay(<?=$client_id?>) class="btn btn-info">Pay</button> <button onClick=bill(<?=$client_id?>) type="button" class="btn btn-info">Bill</button></td>
 			  </tr>
 			  <?php

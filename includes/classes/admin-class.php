@@ -481,7 +481,20 @@
 		 */
 		 public function fetchBilling($limit = 100)
 		{
-			$request = $this->dbh->prepare("SELECT id, customer_id, GROUP_CONCAT(r_month) as months, sum(amount) as total, g_date, p_date, paid FROM payments WHERE paid = 0 Group BY customer_id LIMIT $limit");
+			$request = $this->dbh->prepare("
+			SELECT
+				MIN(id) as id,
+				customer_id,
+				GROUP_CONCAT(r_month) as months,
+				SUM(amount) as total,
+				MAX(g_date) as g_date,
+				MAX(p_date) as p_date,
+				paid
+			FROM payments
+			WHERE paid = 0
+			GROUP BY customer_id, paid
+			LIMIT $limit
+		");
 			if ($request->execute()) {
 				return $request->fetchAll();
 			}
