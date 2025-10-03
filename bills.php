@@ -89,7 +89,6 @@
 
 	<?php include 'includes/footer.php'; ?>
 	<script type="text/javascript">
-		document.getElementById('date').valueAsDate = new Date();
 		function pay(id) {
 		let left = (screen.width/2)-(600/2);
   	let top = (screen.height/2)-(800/2);
