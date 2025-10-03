@@ -23,11 +23,15 @@
     $paidBills = $customerDetails['paid_bills'];
     $transactions = $customerDetails['transactions'];
     $employer = null;
-    if ($customerInfo) {
-        $employer = $admins->getEmployerByLocation($customerInfo->conn_location);
+    if ($customerInfo && $customerInfo->employer_id) {
+        $employer = $admins->getEmployerById($customerInfo->employer_id);
     }
 ?>
-
+<style>
+    .completed-transaction {
+        background-color: lightgreen !important;
+    }
+</style>
 <div class="dashboard">
 	<div class="col-md-12 col-sm-12" id="customer_details">
 		<div class="panel panel-default">
@@ -36,6 +40,14 @@
 			</div>
 			<div class="panel-body">
                 <?php if ($customerInfo): ?>
+                    <?php
+                        $allBills = array_merge($unpaidBills, $paidBills);
+                        usort($allBills, function($a, $b) {
+                            return strtotime($b->g_date) - strtotime($a->g_date);
+                        });
+                        $packageInfo = $admins->getPackageInfo($customerInfo->package_id);
+                        $packageName = $packageInfo ? $packageInfo->name : 'N/A';
+                    ?>
                     <table class="table table-bordered">
                         <tr>
                             <th>Name</th>
@@ -75,69 +87,84 @@
                         </tr>
                     </table>
 
-                    <h3>Billing History</h3>
-                    <?php
-                        $allBills = array_merge($unpaidBills, $paidBills);
-                        usort($allBills, function($a, $b) {
-                            return strtotime($b->g_date) - strtotime($a->g_date);
-                        });
-                        $packageInfo = $admins->getPackageInfo($customerInfo->package_id);
-                        $packageName = $packageInfo ? $packageInfo->name : 'N/A';
-                    ?>
+                    <table class="table table-bordered">
+                        <thead style="background-color: #008080; color: white;">
+                            <tr>
+                                <th>Package</th>
+                                <th>Month</th>
+                                <th>Amount</th>
+                                <th>Paid</th>
+                                <th>Balance</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($allBills && count($allBills) > 0): ?>
+                                <?php foreach ($allBills as $bill):
+                                    if ($bill->paid) {
+                                        $paidAmount = $bill->amount;
+                                        $balance = 0;
+                                    } else {
+                                        $paidAmount = 0;
+                                        $balance = $bill->amount;
+                                    }
+                                ?>
+                                    <tr>
+                                        <td><?= $packageName ?></td>
+                                        <td><?= $bill->r_month ?></td>
+                                        <td><?= $bill->amount ?></td>
+                                        <td><?= $paidAmount ?></td>
+                                        <td><?= $balance ?></td>
+                                        <td><?= $bill->amount ?></td>
+                                        <td><a href="invoice.php?id=<?= $bill->id ?>" class="btn btn-primary">Invoice</a></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="7" class="text-center">No billing history found.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+
+                    <h3>Transaction History</h3>
                     <?php if ($allBills && count($allBills) > 0): ?>
                         <table class="table table-striped">
                             <thead style="background-color: #008080; color: white;">
                                 <tr>
                                     <th>Package</th>
-                                    <th>Amount</th>
                                     <th>Month</th>
-                                    <th>Paid</th>
+                                    <th>Amount</th>
+                                    <th>Paid Amount</th>
                                     <th>Balance</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($allBills as $bill): ?>
-                                    <tr>
+                                <?php foreach ($allBills as $bill):
+                                    if ($bill->paid) {
+                                        $paidAmount = $bill->amount;
+                                        $balance = 0;
+                                        $isCompleted = true;
+                                    } else {
+                                        $paidAmount = 0;
+                                        $balance = $bill->amount;
+                                        $isCompleted = false;
+                                    }
+                                ?>
+                                    <tr class="<?= $isCompleted ? 'completed-transaction' : '' ?>">
                                         <td><?= $packageName ?></td>
-                                        <td><?= $bill->amount ?></td>
                                         <td><?= $bill->r_month ?></td>
-                                        <td><?= $bill->paid ? 'Yes' : 'No' ?></td>
-                                        <td><?= $bill->paid ? '0.00' : $bill->amount ?></td>
+                                        <td><?= $bill->amount ?></td>
+                                        <td><?= $paidAmount ?></td>
+                                        <td><?= $balance ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
                     <?php else: ?>
-                        <p>No billing history found.</p>
+                        <p>No transaction history found.</p>
                     <?php endif; ?>
-
-
-                    <h3>Transaction History</h3>
-                    <?php if ($transactions && count($transactions) > 0): ?>
-                        <table class="table table-striped">
-                            <thead class="thead-inverse">
-                                <tr class="info">
-                                    <th>Months</th>
-                                    <th>Amount</th>
-                                    <th>Discount</th>
-                                    <th>Paid On</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($transactions as $transaction): ?>
-                                    <tr>
-                                        <td><?= $transaction->bill_month ?></td>
-                                        <td><?= $transaction->bill_amount ?></td>
-                                        <td><?= $transaction->Discount ?></td>
-                                        <td><?= $transaction->paid_on ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php else: ?>
-                        <p>No transactions found.</p>
-                    <?php endif; ?>
-
                 <?php else: ?>
                     <p>Customer not found.</p>
                 <?php endif; ?>
