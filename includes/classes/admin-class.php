@@ -10,7 +10,7 @@
 
 		public function __construct($db)
 		{
-			$this->dbh = $db->dbh;
+			$this->dbh = $db;
 		}
 
 		public function loginAdmin($user_name, $user_pwd)

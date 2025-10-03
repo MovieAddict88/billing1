@@ -9,7 +9,7 @@
 		private $dbh = null;
 		public function __construct($db)
 		{
-			$this->dbh = $db->dbh;
+			$this->dbh = $db;
 		}
 
 
