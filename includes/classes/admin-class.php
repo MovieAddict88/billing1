@@ -18,7 +18,7 @@
 			//Un-comment this to see a cryptogram of a user_pwd 
 			// echo session::hashuser_pwd($user_pwd);
 			// die;
-			$request = $this->dbh->prepare("SELECT user_name, user_pwd, role, location FROM kp_user WHERE user_name = ?");
+			$request = $this->dbh->prepare("SELECT user_id, user_name, user_pwd, role, location FROM kp_user WHERE user_name = ?");
 	        if($request->execute( array($user_name) ))
 	        {
 	        	// This is an array of objects.
@@ -96,7 +96,30 @@
 		
 		public function fetchAdmin($limit = 10)
 		{
-			$request = $this->dbh->prepare("SELECT * FROM kp_user  ORDER BY user_id DESC  LIMIT $limit");
+			$limit = (int) $limit;
+			$request = $this->dbh->prepare("SELECT * FROM kp_user  ORDER BY user_id DESC  LIMIT :limit");
+			$request->bindValue(':limit', $limit, PDO::PARAM_INT);
+			if ($request->execute()) {
+				return $request->fetchAll();
+			}
+			return false;
+		}
+
+		public function fetchProductsByEmployer($employer_id)
+		{
+			$request = $this->dbh->prepare("SELECT p.*, COUNT(c.id) as customer_count FROM packages p JOIN customers c ON p.id = c.package_id WHERE c.employer_id = ? GROUP BY p.id");
+			if ($request->execute([$employer_id])) {
+				return $request->fetchAll();
+			}
+			return false;
+		}
+
+		public function fetchCustomersByEmployer($employer_id, $limit = 10)
+		{
+			$limit = (int) $limit;
+			$request = $this->dbh->prepare("SELECT * FROM customers WHERE employer_id = ? ORDER BY id DESC  LIMIT ?");
+			$request->bindValue(1, $employer_id, PDO::PARAM_INT);
+			$request->bindValue(2, $limit, PDO::PARAM_INT);
 			if ($request->execute()) {
 				return $request->fetchAll();
 			}
@@ -270,7 +293,9 @@
 		
 		public function fetchCustomer($limit = 10)
 		{
-			$request = $this->dbh->prepare("SELECT * FROM customers  ORDER BY id DESC  LIMIT $limit");
+			$limit = (int) $limit;
+			$request = $this->dbh->prepare("SELECT * FROM customers  ORDER BY id DESC  LIMIT :limit");
+			$request->bindValue(':limit', $limit, PDO::PARAM_INT);
 			if ($request->execute()) {
 				return $request->fetchAll();
 			}
@@ -316,8 +341,11 @@
 
 		public function fetchCustomersByLocation($location, $limit = 10)
 		{
-			$request = $this->dbh->prepare("SELECT * FROM customers WHERE ? LIKE CONCAT('%', conn_location, '%') ORDER BY id DESC  LIMIT $limit");
-			if ($request->execute([$location])) {
+			$limit = (int) $limit;
+			$request = $this->dbh->prepare("SELECT * FROM customers WHERE ? LIKE CONCAT('%', conn_location, '%') ORDER BY id DESC LIMIT ?");
+			$request->bindValue(1, $location);
+			$request->bindValue(2, $limit, PDO::PARAM_INT);
+			if ($request->execute()) {
 				return $request->fetchAll();
 			}
 			return false;
@@ -404,7 +432,9 @@
 		
 		public function fetchProducts($limit = 100)
 		{
-			$request = $this->dbh->prepare("SELECT * FROM kp_products ORDER BY pro_id  LIMIT $limit");
+			$limit = (int) $limit;
+			$request = $this->dbh->prepare("SELECT * FROM kp_products ORDER BY pro_id  LIMIT :limit");
+			$request->bindValue(':limit', $limit, PDO::PARAM_INT);
 			if ($request->execute()) {
 				return $request->fetchAll();
 			}
@@ -432,7 +462,9 @@
 		*/
 		public function fetchProduction($limit = 5)
 		{
-			$request = $this->dbh->prepare("SELECT * FROM product WHERE type=1 ORDER BY id DESC LIMIT $limit");
+			$limit = (int) $limit;
+			$request = $this->dbh->prepare("SELECT * FROM product WHERE type=1 ORDER BY id DESC LIMIT :limit");
+			$request->bindValue(':limit', $limit, PDO::PARAM_INT);
 			if ($request->execute()) {
 				return $request->fetchAll();
 			}
@@ -440,7 +472,9 @@
 		}
 		public function fetchProductionSend($limit = 5)
 		{
-			$request = $this->dbh->prepare("SELECT * FROM product WHERE type=0 ORDER BY id DESC LIMIT $limit");
+			$limit = (int) $limit;
+			$request = $this->dbh->prepare("SELECT * FROM product WHERE type=0 ORDER BY id DESC LIMIT :limit");
+			$request->bindValue(':limit', $limit, PDO::PARAM_INT);
 			if ($request->execute()) {
 				return $request->fetchAll();
 			}
@@ -481,6 +515,7 @@
 		 */
 		 public function fetchBilling($limit = 100)
 		{
+			$limit = (int) $limit;
 			$request = $this->dbh->prepare("
 			SELECT
 				id,
@@ -493,8 +528,9 @@
 			FROM payments
 			WHERE paid = 0
 			ORDER BY id DESC
-			LIMIT $limit
+			LIMIT :limit
 		");
+			$request->bindValue(':limit', $limit, PDO::PARAM_INT);
 			if ($request->execute()) {
 				return $request->fetchAll();
 			}
@@ -502,8 +538,8 @@
 		}
 		 public function fetchindIvidualBill($customer_id)
 		{
-			$request = $this->dbh->prepare("SELECT * FROM `payments` where customer_id = $customer_id and paid = 0");
-			if ($request->execute()) {
+			$request = $this->dbh->prepare("SELECT * FROM `payments` where customer_id = ? and paid = 0");
+			if ($request->execute([$customer_id])) {
 				return $request->fetchAll();
 			}
 			return false;
@@ -559,7 +595,9 @@
 		 */
 		 public function fetchCollectin($limit = 100)
 		{
-			$request = $this->dbh->prepare("SELECT * FROM cash_collection LIMIT $limit");
+			$limit = (int) $limit;
+			$request = $this->dbh->prepare("SELECT * FROM cash_collection LIMIT :limit");
+			$request->bindValue(':limit', $limit, PDO::PARAM_INT);
 			if ($request->execute()) {
 				return $request->fetchAll();
 			}
@@ -570,7 +608,9 @@
 		 */
 		 public function fetchExpanse($limit = 100)
 		{
-			$request = $this->dbh->prepare("SELECT * FROM cash_expanse LIMIT $limit");
+			$limit = (int) $limit;
+			$request = $this->dbh->prepare("SELECT * FROM cash_expanse LIMIT :limit");
+			$request->bindValue(':limit', $limit, PDO::PARAM_INT);
 			if ($request->execute()) {
 				return $request->fetchAll();
 			}

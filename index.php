@@ -9,11 +9,11 @@ $user_role = $_SESSION['user_role'] ?? 'admin';
 
 if ($user_role == 'employer') {
     // Employer Dashboard
-    $location = $_SESSION['user_location'];
-    $customers = $admins->fetchCustomersByLocation($location);
-    $products = $admins->fetchProductsByCustomerLocation($location);
+    $employer_id = $_SESSION['user_id'];
+    $customers = $admins->fetchCustomersByEmployer($employer_id);
+    $products = $admins->fetchProductsByEmployer($employer_id);
 ?>
-<h3>Employer Dashboard - Location: <?php echo htmlspecialchars($location); ?></h3>
+<h3>Employer Dashboard</h3>
 <style>
     .table-custom thead {
         background-color: #008080;
@@ -27,7 +27,7 @@ if ($user_role == 'employer') {
 <div class="row">
     <div class="col-md-6">
         <div class="panel panel-default">
-            <div class="panel-heading">Customers in Your Location</div>
+            <div class="panel-heading">Your Assigned Customers</div>
             <div class="panel-body">
                 <table class="table table-striped table-custom">
                     <thead>
@@ -65,7 +65,7 @@ if ($user_role == 'employer') {
     </div>
     <div class="col-md-6">
         <div class="panel panel-default">
-            <div class="panel-heading">Products Availed by Customers in Your Location</div>
+            <div class="panel-heading">Products Availed by Your Customers</div>
             <div class="panel-body">
                 <table class="table table-striped">
                     <thead>
