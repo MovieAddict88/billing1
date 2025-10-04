@@ -6,7 +6,8 @@
 	}
 	require_once "includes/classes/admin-class.php";
     $admins	= new Admins($dbh);
-    $id = isset($_GET[ 'customer' ])?$_GET[ 'customer' ]:''; 
+    $id = isset($_GET[ 'customer' ])?$_GET[ 'customer' ]:'';
+    $action = isset($_GET['action']) ? $_GET['action'] : 'pay';
     ?>
     <style>
     body {
@@ -62,6 +63,11 @@
       background: #f8f8a6;
       font-weight: bold;
     }
+    @media print {
+      .no-print {
+        display: none;
+      }
+    }
   </style>
 <!doctype html>
 <html lang="en" class="no-js">
@@ -87,10 +93,23 @@
         ?>
     <div class="row">
         <div class="brand"><img src="component/img/cs.png" alt=""></div>
-        <h2>STATEMENT OF ACCOUNT</h2>
+        <?php if ($action == 'bill'): ?>
+            <h2>INVOICE</h2>
+        <?php else: ?>
+            <h2>STATEMENT OF ACCOUNT</h2>
+        <?php endif; ?>
+        </div>
+        <div class="row no-print">
+            <div class="col-xs-12">
+                <button class="btn btn-primary pull-right" onclick="window.print();">
+                    <i class="fa fa-print"></i> Print
+                </button>
+            </div>
         </div>
         <div class="pull-right">Date: <?=date("j F Y")?></div><br>
-        <h3>Subject   : NOTICE FOR DISCONNECTION</h3>
+        <?php if ($action != 'bill'): ?>
+            <h3>Subject   : NOTICE FOR DISCONNECTION</h3>
+        <?php endif; ?>
         <div class="em"><b>Name   : </b> <em><?=$info->full_name?></em></div>
         <div class="em"><b>Address:</b> <em><?=$info->address ?></em></div>
         <div class="em"><b>Contact :</b> <em><?=$info->contact ?></em> </div>
@@ -102,34 +121,47 @@
                 <tr>
                     <th>Billing Month</th>
                     <th>Amount</th>
+                    <?php if ($action == 'bill'): ?>
+                        <th>Status</th>
+                    <?php endif; ?>
                 </tr>
             </thead>
             <tbody>
             <?php
-                $bills = $admins->fetchindIvidualBill($id);
+                if ($action == 'bill') {
+                    $bills = $admins->fetchAllIndividualBill($id);
+                } else {
+                    $bills = $admins->fetchindIvidualBill($id);
+                }
                 $total = 0;
                 $bill_ids = [];
                 $monthArray = [];
                 if (isset($bills) && sizeof($bills) > 0){
                     foreach ($bills as $bill){
-                        $total += $bill->amount;
+                        if ($bill->paid == 0) {
+                            $total += $bill->amount;
+                        }
                         $monthArray[]=$bill->r_month;
                         $bill_ids[]=$bill->id;
                         ?>
                     <tr>
                        <td><?=$bill->r_month?></td>
                        <td>₱<?=number_format($bill->amount, 2)?></td>
+                       <?php if ($action == 'bill'): ?>
+                           <td><?=($bill->paid == 1) ? 'Paid' : 'Unpaid'?></td>
+                       <?php endif; ?>
                     </tr>
                 <?php   }
                 } else { ?>
                     <tr>
-                        <td colspan="2" class="text-center">No unpaid bills found.</td>
+                        <td colspan="<?=($action == 'bill') ? 3 : 2?>" class="text-center">No bills found.</td>
                     </tr>
                 <?php } ?>
             </tbody>
         </table>
     </div>
-    <div class="row">
+    <?php if ($action != 'bill'): ?>
+    <div class="row no-print">
      <form class="form-inline" action="post_approve.php" method="POST">
             <input type="hidden" name="customer" value="<?=(isset($info->id) ? $info->id : '')?>">			
             <input type="hidden" name="bills" value="<?=implode(isset($bill_ids) ? $bill_ids : [],',')?>">			
@@ -156,6 +188,7 @@
             <button type="submit" class="btn btn-primary">Paid</button>
         </form>
     </div>
+    <?php endif; ?>
     <div class="sign pull-right">Authorized Signature</div>
 </div>
 
