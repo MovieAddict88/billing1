@@ -105,6 +105,40 @@
 			return false;
 		}
 
+		public function fetchCustomerStatusByEmployer($employer_id)
+		{
+			$request = $this->dbh->prepare("
+				SELECT
+					status,
+					COUNT(*) as count
+				FROM (
+					SELECT
+						c.id,
+						CASE
+							WHEN c.dropped = 1 THEN 'Suspended'
+							-- Customer has unpaid bills from previous months
+							WHEN EXISTS (SELECT 1 FROM payments p WHERE p.customer_id = c.id AND p.paid = 0 AND p.r_month < DATE_FORMAT(NOW(), '%Y-%m')) THEN 'Past Due'
+							-- Customer has an unpaid bill for the current month
+							WHEN EXISTS (SELECT 1 FROM payments p WHERE p.customer_id = c.id AND p.paid = 0 AND p.r_month = DATE_FORMAT(NOW(), '%Y-%m')) THEN 'Due'
+							-- Customer has paid for the current month (and has no past due bills, which is checked by the order of the CASE)
+							WHEN EXISTS (SELECT 1 FROM payments p WHERE p.customer_id = c.id AND p.paid = 1 AND p.r_month = DATE_FORMAT(NOW(), '%Y-%m')) THEN 'Paid'
+							-- Default for customers who don't fit other categories (e.g., new customers)
+							ELSE 'Prospects'
+						END as status
+					FROM
+						customers c
+					WHERE
+						c.employer_id = ?
+				) as customer_status
+				GROUP BY
+					status
+			");
+			if ($request->execute([$employer_id])) {
+				return $request->fetchAll();
+			}
+			return false;
+		}
+
 		public function fetchProductsByEmployer($employer_id)
 		{
 			$request = $this->dbh->prepare("SELECT p.*, COUNT(c.id) as customer_count FROM packages p JOIN customers c ON p.id = c.package_id WHERE c.employer_id = ? GROUP BY p.id");
