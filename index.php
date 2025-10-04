@@ -254,12 +254,12 @@ include 'includes/footer.php';
                     ctx.fillStyle = color;
                     
                     // Draw text in center
-                    ctx.fillText(txt, centerX, centerY - 10);
+                    ctx.fillText(txt, centerX, centerY - (fontSizeToUse / 4));
 
                     // Draw subtext
                     if(centerConfig.subText){
                         ctx.font = (fontSizeToUse / 2) + "px " + fontStyle;
-                        ctx.fillText(centerConfig.subText, centerX, centerY + 10);
+                        ctx.fillText(centerConfig.subText, centerX, centerY + (fontSizeToUse / 2));
                     }
                 }
             }
