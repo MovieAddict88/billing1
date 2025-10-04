@@ -8,25 +8,6 @@ jQuery(document).ready(function(){
 		searchForm = $('.cd-search'),
 		accountInfo = $('.account');
 
-	//on resize, move search and top nav position according to window width
-	var resizing = false;
-	moveNavigation();
-	$(window).on('resize', function(){
-		if( !resizing ) {
-			(!window.requestAnimationFrame) ? setTimeout(moveNavigation, 300) : window.requestAnimationFrame(moveNavigation);
-			resizing = true;
-		}
-	});
-
-	//on window scrolling - fix sidebar nav
-	var scrolling = false;
-	checkScrollbarPosition();
-	$(window).on('scroll', function(){
-		if( !scrolling ) {
-			(!window.requestAnimationFrame) ? setTimeout(checkScrollbarPosition, 300) : window.requestAnimationFrame(checkScrollbarPosition);
-			scrolling = true;
-		}
-	});
 
 	//mobile only - open sidebar when user clicks the hamburger menu
 	sidebarTrigger.on('click', function(event){
@@ -85,7 +66,7 @@ jQuery(document).ready(function(){
 
 	function checkMQ() {
 		//check if mobile or desktop device
-		//return window.getComputedStyle(document.querySelector('.cd-main-content'), '::before').getPropertyValue('content').replace(/'/g, "").replace(/"/g, "");
+		return window.getComputedStyle(document.querySelector('.cd-main-content'), '::before').getPropertyValue('content').replace(/'/g, "").replace(/"/g, "");
 	}
 
 	function moveNavigation(){
