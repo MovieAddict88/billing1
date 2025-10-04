@@ -9,23 +9,34 @@ $user_role = $_SESSION['user_role'] ?? 'admin';
 
 if ($user_role == 'employer') {
     // Employer Dashboard
-    $location = $_SESSION['user_location'];
-    $customers = $admins->fetchCustomersByLocation($location);
-    $products = $admins->fetchProductsByCustomerLocation($location);
+    $employer_id = $_SESSION['user_id'];
+    $customers = $admins->fetchCustomersByEmployer($employer_id);
+    $products = $admins->fetchProductsByEmployer($employer_id);
 ?>
-<h3>Employer Dashboard - Location: <?php echo htmlspecialchars($location); ?></h3>
+<h3>Employer Dashboard</h3>
+<style>
+    .table-custom thead {
+        background-color: #008080;
+        color: white;
+    }
+    .table-custom .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+</style>
 <div class="row">
     <div class="col-md-6">
         <div class="panel panel-default">
-            <div class="panel-heading">Customers in Your Location</div>
+            <div class="panel-heading">Your Assigned Customers</div>
             <div class="panel-body">
-                <table class="table table-striped">
+                <table class="table table-striped table-custom">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th>Address</th>
                             <th>Contact</th>
                             <th>Login Code</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -36,11 +47,15 @@ if ($user_role == 'employer') {
                                     <td><?php echo htmlspecialchars($customer->address); ?></td>
                                     <td><?php echo htmlspecialchars($customer->contact); ?></td>
                                     <td><?php echo htmlspecialchars($customer->login_code); ?></td>
+                                    <td>
+                                        <a href="pay.php?customer=<?php echo $customer->id; ?>&action=bill" class="btn btn-primary btn-sm">Invoice</a>
+                                        <a href="pay.php?customer=<?php echo $customer->id; ?>" class="btn btn-info btn-sm">Bill</a>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="4">No customers found for this location.</td>
+                                <td colspan="5">No customers found for this location.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -50,7 +65,7 @@ if ($user_role == 'employer') {
     </div>
     <div class="col-md-6">
         <div class="panel panel-default">
-            <div class="panel-heading">Products Availed by Customers in Your Location</div>
+            <div class="panel-heading">Products Availed by Your Customers</div>
             <div class="panel-body">
                 <table class="table table-striped">
                     <thead>
